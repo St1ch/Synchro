@@ -1,5 +1,6 @@
 package org.redstone;
 
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +18,12 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.redstone.SynchroAPI;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +35,7 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
     private Map<UUID, Boolean> respawningPlayers;
     private boolean isSynchronizing = false;
     private Map<UUID, ItemStack[]> lastKnownInventory;
+    private boolean syncEnabled = true;
 
     @Override
     public void onEnable() {
@@ -45,6 +53,9 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
                 }
             }
         }.runTaskTimer(this, 20L, 40L); // Run every 2 seconds instead of every second
+
+        getCommand("synchro").setExecutor(new SynchroCommand(this));
+        SynchroAPI.setPlugin(this);
     }
 
     @Override
@@ -148,15 +159,17 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
     }
 
     private void synchronizePlayers() {
+        if (!syncEnabled) return;
         if (isSynchronizing) return;
         isSynchronizing = true;
-        
         try {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (!respawningPlayers.containsKey(player.getUniqueId())) {
                     synchronizeInventory(player);
+                    synchronizeArmor(player);
                     synchronizeHealth(player);
                     synchronizeHunger(player);
+                    synchronizeEffects(player);
                 }
             }
         } finally {
@@ -234,6 +247,30 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
         }
     }
 
+    private void synchronizeArmor(Player source) {
+        if (source == null || !source.isOnline()) return;
+        ItemStack[] armor = source.getInventory().getArmorContents();
+        for (Player target : Bukkit.getOnlinePlayers()) {
+            if (target != source && target.isOnline() && !respawningPlayers.containsKey(target.getUniqueId())) {
+                target.getInventory().setArmorContents(cloneInventory(armor));
+            }
+        }
+    }
+
+    private void synchronizeEffects(Player source) {
+        if (source == null || !source.isOnline()) return;
+        for (Player target : Bukkit.getOnlinePlayers()) {
+            if (target != source && target.isOnline() && !respawningPlayers.containsKey(target.getUniqueId())) {
+                for (PotionEffect effect : target.getActivePotionEffects()) {
+                    target.removePotionEffect(effect.getType());
+                }
+                for (PotionEffect effect : source.getActivePotionEffects()) {
+                    target.addPotionEffect(new PotionEffect(effect.getType(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles(), effect.hasIcon()));
+                }
+            }
+        }
+    }
+
     private static class PlayerData {
         private final ItemStack[] inventory;
         private final double health;
@@ -246,5 +283,17 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
             this.foodLevel = player.getFoodLevel();
             this.saturation = player.getSaturation();
         }
+    }
+
+    public boolean isSyncEnabled() {
+        return syncEnabled;
+    }
+
+    public void setSyncEnabled(boolean enabled) {
+        this.syncEnabled = enabled;
+    }
+
+    public void manualSync() {
+        synchronizePlayers();
     }
 } 

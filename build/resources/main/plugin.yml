@@ -1,6 +1,11 @@
 name: Synchro
-version: '1.0'
+version: '1.2'
 main: org.redstone.SynhroPlugin
 api-version: '1.21'
 description: A plugin that synchronizes inventory, health and hunger between players
 author: Redstone
+commands:
+  synchro:
+    description: Synchro plugin admin command
+    usage: /<command> <enable|disable|sync|status>
+    permission: synchro.admin
