@@ -1,18 +1,19 @@
 # Synchro
 
-A Minecraft plugin that synchronizes **inventory, armor, potion effects, health, and hunger** between all players in survival mode. Includes admin commands and a public Java API for integration with other plugins.
+A Minecraft plugin that synchronizes **inventory, armor, potion effects, health, hunger, and experience** between all players in survival mode. Synchronization is instant and covers all possible changes. Includes admin commands and a public Java API for integration with other plugins.
 
 ## Features
 
-- **Inventory Synchronization**: All players share the same inventory in real time
-- **Armor Synchronization**: All players wear the same armor
-- **Potion Effects Synchronization**: All active potion effects are shared between players
-- **Health Synchronization**: Players' health is synchronized
-- **Hunger Synchronization**: Players' hunger and saturation levels are synchronized
-- **Death Synchronization**: When one player dies, all players die together
-- **Respawn Handling**: Proper synchronization after player respawn
-- **Admin Commands**: Enable/disable sync, force sync, check status
-- **Public Java API**: Other plugins can control and check sync status programmatically
+- **Inventory Synchronization:** All players share the same inventory in real time
+- **Armor Synchronization:** All players wear the same armor
+- **Potion Effects Synchronization:** All active potion effects are shared between players
+- **Health Synchronization:** Players' health is instantly synchronized
+- **Hunger Synchronization:** Players' hunger and saturation levels are instantly synchronized
+- **Experience Synchronization:** All players have the same experience and level at all times
+- **Death Synchronization:** If one player dies, all players die together
+- **Respawn Handling:** After respawn, all players are automatically resynchronized
+- **Admin Commands:** Enable/disable sync, force sync, check status
+- **Public Java API:** Other plugins can control and check sync status programmatically
 
 ## Requirements
 
@@ -30,8 +31,7 @@ A Minecraft plugin that synchronizes **inventory, armor, potion effects, health,
 
 The plugin works automatically after installation. No configuration needed!
 
-- All players' inventories, armor, and potion effects will be synchronized
-- Health and hunger levels will be shared between all players
+- All players' inventories, armor, potion effects, health, hunger, and experience will be instantly synchronized
 - When one player dies, all players will die together
 - After respawn, all players will be properly synchronized
 
