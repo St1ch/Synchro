@@ -55,6 +55,8 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
     private Map<UUID, Float> lastKnownSaturation;
     private Map<UUID, Integer> lastKnownExp;
     private Map<UUID, Integer> lastKnownLevel;
+    private ItemStack[] masterInventory;
+    private ItemStack[] masterArmor;
 
     @Override
     public void onEnable() {
@@ -68,6 +70,8 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
         lastKnownSaturation = new ConcurrentHashMap<>();
         lastKnownExp = new ConcurrentHashMap<>();
         lastKnownLevel = new ConcurrentHashMap<>();
+        masterInventory = null;
+        masterArmor = null;
         getServer().getPluginManager().registerEvents(this, this);
         
         getCommand("synchro").setExecutor(new SynchroCommand(this));
@@ -105,6 +109,8 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
         lastKnownSaturation.clear();
         lastKnownExp.clear();
         lastKnownLevel.clear();
+        masterInventory = null;
+        masterArmor = null;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -346,21 +352,24 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
         if (source == null || !source.isOnline()) return;
         
         ItemStack[] currentContents = source.getInventory().getContents();
-        ItemStack[] lastContents = lastKnownInventory.get(source.getUniqueId());
-        
-        // Check if inventory actually changed
-        if (lastContents != null && areInventoriesEqual(currentContents, lastContents)) {
-            return;
+        if (masterInventory == null) {
+            masterInventory = cloneInventory(currentContents);
         }
         
-        // Update last known inventory
-        lastKnownInventory.put(source.getUniqueId(), cloneInventory(currentContents));
-        
-        // Synchronize with other players
-        for (Player target : Bukkit.getOnlinePlayers()) {
-            if (target != source && target.isOnline() && !respawningPlayers.containsKey(target.getUniqueId())) {
-                target.getInventory().setContents(cloneInventory(currentContents));
-                lastKnownInventory.put(target.getUniqueId(), cloneInventory(currentContents));
+        // Check if inventory actually changed
+        if (!areInventoriesEqual(currentContents, masterInventory)) {
+            masterInventory = cloneInventory(currentContents);
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                if (target.isOnline() && !respawningPlayers.containsKey(target.getUniqueId())) {
+                    target.getInventory().setContents(cloneInventory(masterInventory));
+                    lastKnownInventory.put(target.getUniqueId(), cloneInventory(masterInventory));
+                }
+            }
+        } else {
+            // Если игроку нужно обновить инвентарь (например, после входа)
+            if (!areInventoriesEqual(source.getInventory().getContents(), masterInventory)) {
+                source.getInventory().setContents(cloneInventory(masterInventory));
+                lastKnownInventory.put(source.getUniqueId(), cloneInventory(masterInventory));
             }
         }
     }
@@ -425,15 +434,21 @@ public class SynhroPlugin extends JavaPlugin implements Listener {
     private void synchronizeArmor(Player source) {
         if (source == null || !source.isOnline()) return;
         ItemStack[] currentArmor = source.getInventory().getArmorContents();
-        ItemStack[] lastArmor = lastKnownArmor.get(source.getUniqueId());
-        if (lastArmor != null && areInventoriesEqual(currentArmor, lastArmor)) {
-            return;
+        if (masterArmor == null) {
+            masterArmor = cloneInventory(currentArmor);
         }
-        lastKnownArmor.put(source.getUniqueId(), cloneInventory(currentArmor));
-        for (Player target : Bukkit.getOnlinePlayers()) {
-            if (target != source && target.isOnline() && !respawningPlayers.containsKey(target.getUniqueId())) {
-                target.getInventory().setArmorContents(cloneInventory(currentArmor));
-                lastKnownArmor.put(target.getUniqueId(), cloneInventory(currentArmor));
+        if (!areInventoriesEqual(currentArmor, masterArmor)) {
+            masterArmor = cloneInventory(currentArmor);
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                if (target.isOnline() && !respawningPlayers.containsKey(target.getUniqueId())) {
+                    target.getInventory().setArmorContents(cloneInventory(masterArmor));
+                    lastKnownArmor.put(target.getUniqueId(), cloneInventory(masterArmor));
+                }
+            }
+        } else {
+            if (!areInventoriesEqual(source.getInventory().getArmorContents(), masterArmor)) {
+                source.getInventory().setArmorContents(cloneInventory(masterArmor));
+                lastKnownArmor.put(source.getUniqueId(), cloneInventory(masterArmor));
             }
         }
     }
