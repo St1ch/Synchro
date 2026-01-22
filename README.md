@@ -17,9 +17,9 @@ A Minecraft plugin that synchronizes **inventory, armor, potion effects, health,
 
 ## Requirements
 
-- Minecraft 1.21
-- Paper/Spigot server
-- Java 21 or higher
+- Minecraft 1.18 - 1.21.x
+- Bukkit/Spigot/Paper/Folia server
+- Java 17 or higher
 
 ## Installation
 
