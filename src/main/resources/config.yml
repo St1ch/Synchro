@@ -1,0 +1,22 @@
+sync:
+  inventory: true
+  armor: true
+  potion-effects: true
+  health: true
+  hunger: true
+  experience: true
+  death: true
+  ender-chest: true
+  advancements: true
+  one-player-sleep: true
+  fire-ticks: true
+
+debug:
+  enabled: false
+
+update-checker:
+  enabled: true
+  check-interval-minutes: 60
+  notify-permission: synchro.admin
+  modrinth-project: "I0rM9fEI"
+  github-repo: "St1ch/Synchro"

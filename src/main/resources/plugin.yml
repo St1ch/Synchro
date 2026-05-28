@@ -8,5 +8,5 @@ folia-supported: true
 commands:
   synchro:
     description: Synchro plugin admin command
-    usage: /<command> <enable|disable|sync|status>
+    usage: /<command> <enable|disable|sync|status|reload|restore|debug|version>
     permission: synchro.admin
